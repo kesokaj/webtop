@@ -40,7 +40,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get install -y \
         docker.io docker-compose bash-completion vim net-tools dnsutils \
         ssh google-cloud-cli iproute2 openssh-server lsof python3 python3-pip \
-        lftp npm git wget kubectl dnsutils iputils-ping nmap nmon \
+        lftp npm git wget kubectl dnsutils iputils-ping nmap nmon google-cloud-sdk-gke-gcloud-auth-plugin \
         s3cmd jq tldr terraform nano && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
