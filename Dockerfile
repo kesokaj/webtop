@@ -1,4 +1,5 @@
 FROM debian:stable-slim
+LABEL org.opencontainers.image.source https://github.com/kesokaj/webtop
 
 ## First round of installs
 RUN export DEBIAN_FRONTEND=noninteractive && \
