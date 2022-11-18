@@ -1,0 +1,16 @@
+version: "3.3"
+services:
+  webtop:
+    container_name: webtop
+    hostname: webtop
+    image: ghcr.io/kesokaj/webtop:v1
+    privileged: true
+    volumes:
+    - ./home:/home
+    environment:
+    - TZ=Europe/Stockholm
+    - SHELL_USER=user
+    - SHELL_PASSWORD=user
+    ports:
+    - "8080:8080"
+    restart: unless-stopped
