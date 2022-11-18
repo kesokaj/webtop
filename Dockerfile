@@ -52,5 +52,6 @@ EXPOSE 8080
 ENV DISPLAY :0
 ENV SHELL_USER user
 ENV SHELL_PASSWORD user
-COPY init.sh /init.sh
+COPY init.sh init.sh
+RUN chmod +x init.sh
 ENTRYPOINT [ "/init.sh" ]
