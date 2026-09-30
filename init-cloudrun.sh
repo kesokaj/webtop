@@ -25,6 +25,19 @@ chown ${SHELL_USER}:${SHELL_USER} /tmp/runtime-${SHELL_USER}
 mkdir -p /run/dbus
 dbus-daemon --system --fork 2>/dev/null || true
 
+## Fix /dev/shm for Electron apps (default 64MB causes crashes/freezes)
+mount -t tmpfs -o size=2g tmpfs /dev/shm 2>/dev/null || true
+
+## Disable GPU in all Electron apps (no GPU on Cloud Run = software render = freeze)
+# VS Code
+sed -i 's|/usr/share/code/code|/usr/share/code/code --disable-gpu --disable-software-rasterizer|g' /usr/share/applications/com.microsoft.VSCode.desktop 2>/dev/null || true
+# Google Chrome
+sed -i 's|/usr/bin/google-chrome-stable|/usr/bin/google-chrome-stable --disable-gpu --disable-software-rasterizer --no-sandbox|g' /usr/share/applications/google-chrome.desktop 2>/dev/null || true
+# Antigravity 2.0
+for f in /usr/share/applications/antigravity*.desktop; do
+  [ -f "$f" ] && sed -i 's|Exec=\(.*antigravity\)|Exec=\1 --disable-gpu --disable-software-rasterizer|' "$f" 2>/dev/null || true
+done
+
 ## Create VNC xstartup for KDE
 mkdir -p /home/${SHELL_USER}/.vnc
 cat > /home/${SHELL_USER}/.vnc/xstartup <<'XSTARTUP'
