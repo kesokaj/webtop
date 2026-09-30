@@ -9,6 +9,9 @@ if [ "${SHELL_USER}" ] && [ "${SHELL_PASSWORD}" ]; then
   useradd -rm -d /home/${SHELL_USER} -s /bin/bash -u 666 ${SHELL_USER}
   echo "${SHELL_USER} ALL=(ALL:ALL) NOPASSWD: ALL" >> /etc/sudoers
   echo -e "${SHELL_PASSWORD}\n${SHELL_PASSWORD}" | passwd ${SHELL_USER}
+  # Default working directory
+  mkdir -p /home/${SHELL_USER}/Workspace
+  chown ${SHELL_USER}:${SHELL_USER} /home/${SHELL_USER}/Workspace
 else
   echo "SHELL_USER and SHELL_PASSWORD must be set"
   exit 1
@@ -31,6 +34,7 @@ mount -t tmpfs -o size=2g tmpfs /dev/shm 2>/dev/null || true
 ## Disable GPU in all Electron apps (no GPU on Cloud Run = software render = freeze)
 # VS Code
 sed -i 's|/usr/share/code/code|/usr/share/code/code --disable-gpu --disable-software-rasterizer|g' /usr/share/applications/com.microsoft.VSCode.desktop 2>/dev/null || true
+sed -i 's|Exec=code|Exec=code --disable-gpu --disable-software-rasterizer /home/user/Workspace|' /usr/share/applications/com.microsoft.VSCode.desktop 2>/dev/null || true
 # Google Chrome
 sed -i 's|/usr/bin/google-chrome-stable|/usr/bin/google-chrome-stable --disable-gpu --disable-software-rasterizer --no-sandbox|g' /usr/share/applications/google-chrome.desktop 2>/dev/null || true
 # Antigravity 2.0
@@ -114,6 +118,30 @@ Name=/home/user/.local/share/akonadi/akonadi.db
 [Search]
 Manager=Disabled
 AKONADI
+
+# Konsole default profile — start in ~/Workspace
+mkdir -p /home/${SHELL_USER}/.local/share/konsole
+cat > /home/${SHELL_USER}/.local/share/konsole/Webtop.profile <<'KONSOLE'
+[General]
+Command=/bin/bash
+Directory=/home/user/Workspace
+Name=Webtop
+Parent=FALLBACK/
+KONSOLE
+cat > /home/${SHELL_USER}/.config/konsolerc <<'KONSOLERC'
+[Desktop Entry]
+DefaultProfile=Webtop.profile
+KONSOLERC
+
+# VS Code — open ~/Workspace by default and disable GPU
+mkdir -p /home/${SHELL_USER}/.config/Code/User
+cat > /home/${SHELL_USER}/.config/Code/User/settings.json <<'VSCODE'
+{
+  "window.restoreWindows": "none",
+  "telemetry.telemetryLevel": "off",
+  "update.mode": "none"
+}
+VSCODE
 
 ## Pre-configure KDE panel with pinned app launchers
 cat > /home/${SHELL_USER}/.config/plasma-org.kde.plasma.desktop-appletsrc <<'PANELCFG'
