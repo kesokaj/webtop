@@ -98,7 +98,8 @@ RUN curl -fsSL https://antigravity.google/cli/install.sh | HOME=/root bash && \
 # Disable PAM limits (Cloud Run has no CAP_SYS_RESOURCE)
 RUN sed -i 's/^session.*pam_limits.so/#&/' /etc/pam.d/su /etc/pam.d/su-l 2>/dev/null || true
 
-# Cloud Run init script
+# Cloud Run init script + custom noVNC page
+COPY index.html /index.html
 COPY init-cloudrun.sh /init-cloudrun.sh
 RUN chmod +x /init-cloudrun.sh
 

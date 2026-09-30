@@ -43,8 +43,59 @@ XSTARTUP
 chmod +x /home/${SHELL_USER}/.vnc/xstartup
 chown -R ${SHELL_USER}:${SHELL_USER} /home/${SHELL_USER}/.vnc
 
+## Pre-configure KDE panel with pinned app launchers
+mkdir -p /home/${SHELL_USER}/.config
+cat > /home/${SHELL_USER}/.config/plasma-org.kde.plasma.desktop-appletsrc <<'PANELCFG'
+[ActionPlugins][0]
+RightButton;NoModifier=org.kde.contextmenu
+
+[Containments][1]
+activityId=
+formfactor=2
+immutability=1
+lastScreen=0
+location=4
+plugin=org.kde.panel
+wallpaperplugin=org.kde.image
+
+[Containments][1][Applets][2]
+immutability=1
+plugin=org.kde.plasma.kickoff
+
+[Containments][1][Applets][3]
+immutability=1
+plugin=org.kde.plasma.icontasks
+
+[Containments][1][Applets][3][Configuration][General]
+launchers=applications:google-chrome.desktop,applications:org.kde.konsole.desktop,applications:antigravity.desktop,applications:com.microsoft.VSCode.desktop
+
+[Containments][1][Applets][4]
+immutability=1
+plugin=org.kde.plasma.systemtray
+
+[Containments][1][Applets][5]
+immutability=1
+plugin=org.kde.plasma.digitalclock
+
+[Containments][1][General]
+AppletOrder=2;3;4;5
+
+[Containments][2]
+activityId=
+formfactor=0
+immutability=1
+lastScreen=0
+location=0
+plugin=org.kde.desktopcontainment
+wallpaperplugin=org.kde.image
+PANELCFG
+chown -R ${SHELL_USER}:${SHELL_USER} /home/${SHELL_USER}/.config
+
 ## Start noVNC websocket proxy
-ln -sf /usr/share/novnc/vnc_lite.html /usr/share/novnc/index.html
+cp /index.html /usr/share/novnc/index.html
+sed -i "s/<title>Webtop<\/title>/<title>${HOSTNAME}<\/title>/g" /usr/share/novnc/index.html
+sed -i "s/document.title = \"Webtop\"/document.title = \"${HOSTNAME}\"/g" /usr/share/novnc/index.html
+sed -i "s/document.title = \"Webtop (disconnected)\"/document.title = \"${HOSTNAME} (disconnected)\"/g" /usr/share/novnc/index.html
 websockify --web=/usr/share/novnc/ 8080 localhost:5900 -D
 
 ## Start VNC server — run Xtigervnc directly instead of through vncserver wrapper
