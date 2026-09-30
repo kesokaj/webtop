@@ -100,6 +100,26 @@ AnimationDurationFactor=0
 GraphicEffectsLevel=0
 KDEGLOBALS
 
+# Disable screen lock
+cat > /home/${SHELL_USER}/.config/kscreenlockerrc <<'SCREENLOCK'
+[Daemon]
+Autolock=false
+LockOnResume=false
+Timeout=0
+SCREENLOCK
+
+# Disable power management / screen off
+cat > /home/${SHELL_USER}/.config/powermanagementprofilesrc <<'POWER'
+[AC][DPMSControl]
+idleTime=0
+lockBeforeTurnOff=0
+
+[AC][SuspendSession]
+idleTime=0
+suspendThenHibernate=false
+suspendType=0
+POWER
+
 # Disable baloo file indexer (saves CPU)
 cat > /home/${SHELL_USER}/.config/baloofilerc <<'BALOO'
 [Basic Settings]
