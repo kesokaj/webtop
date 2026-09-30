@@ -1,0 +1,6 @@
+.DS_Store
+.claude/worktrees/
+.claude/settings.local.json
+.agents/memory
+.agents/scratch/*
+!.agents/scratch/.gitkeep
