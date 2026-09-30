@@ -43,8 +43,66 @@ XSTARTUP
 chmod +x /home/${SHELL_USER}/.vnc/xstartup
 chown -R ${SHELL_USER}:${SHELL_USER} /home/${SHELL_USER}/.vnc
 
-## Pre-configure KDE panel with pinned app launchers
+## KDE performance: disable compositing, animations, and background services
 mkdir -p /home/${SHELL_USER}/.config
+
+# Disable kwin compositing (huge perf win — no GPU means software OpenGL)
+cat > /home/${SHELL_USER}/.config/kwinrc <<'KWINRC'
+[Compositing]
+Enabled=false
+OpenGLIsUnsafe=true
+
+[Windows]
+AnimateMinimize=false
+AnimateShade=false
+
+[Effect-Slide]
+Duration=0
+
+[Effect-FadeDesktop]
+Duration=0
+
+[Plugins]
+blurEnabled=false
+contrastEnabled=false
+slideEnabled=false
+fadeEnabled=false
+loginEnabled=false
+logoutEnabled=false
+maximizeEnabled=false
+morphingpopupsEnabled=false
+squashEnabled=false
+translucencyEnabled=false
+windowapertureEnabled=false
+KWINRC
+
+# Disable all KDE animations and set speed to instant
+cat > /home/${SHELL_USER}/.config/kdeglobals <<'KDEGLOBALS'
+[KDE]
+AnimationDurationFactor=0
+GraphicEffectsLevel=0
+KDEGLOBALS
+
+# Disable baloo file indexer (saves CPU)
+cat > /home/${SHELL_USER}/.config/baloofilerc <<'BALOO'
+[Basic Settings]
+Indexing-Enabled=false
+BALOO
+
+# Disable akonadi PIM storage
+mkdir -p /home/${SHELL_USER}/.config/akonadi
+cat > /home/${SHELL_USER}/.config/akonadi/akonadiserverrc <<'AKONADI'
+[%General]
+Driver=QSQLITE
+
+[QSQLITE]
+Name=/home/user/.local/share/akonadi/akonadi.db
+
+[Search]
+Manager=Disabled
+AKONADI
+
+## Pre-configure KDE panel with pinned app launchers
 cat > /home/${SHELL_USER}/.config/plasma-org.kde.plasma.desktop-appletsrc <<'PANELCFG'
 [ActionPlugins][0]
 RightButton;NoModifier=org.kde.contextmenu
