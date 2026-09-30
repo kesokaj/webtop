@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Cloud-based KDE desktop environment running on Google Cloud Run, providing a full Linux development workstation accessible through a web browser. The container runs KDE Plasma over TigerVNC + noVNC (websockify on port 8080) and comes pre-installed with Chrome, VS Code, Antigravity CLI/2.0, kubectl, gcloud, terraform, opentofu, docker, git, gh, helm, Go, and networking/troubleshooting tools.
+Cloud-based KDE desktop environment running on Google Cloud Run, providing a full Linux development workstation accessible through a web browser. The container runs KDE Plasma over KasmVNC v1.5.0 (WebP-encoded streaming with built-in web server on port 8080) and comes pre-installed with Chrome, VS Code, Antigravity CLI/2.0, kubectl, gcloud, terraform, opentofu, docker, git, gh, helm, Go, and networking/troubleshooting tools.
 
 ## Setup Commands
 
@@ -25,14 +25,14 @@ docker stop webtop-test
 ## Architecture
 
 - **Base image:** Ubuntu 24.04 with KDE Plasma desktop
-- **Display stack:** Xtigervnc (:0, port 5900) → websockify (port 8080) → noVNC (browser)
+- **Display stack:** KasmVNC v1.5.0 (Xkasmvnc :1 + built-in web server on port 8080, WebP encoding, no separate websockify/noVNC needed)
 - **Init:** `init-cloudrun.sh` — Cloud Run compatible init (no privileged mode, PAM limits disabled, dbus started manually)
-- **Dockerfile.cloudrun** — full build from Ubuntu, installs KDE + all dev tools
+- **Dockerfile.cloudrun** — full build from Ubuntu, installs KDE + KasmVNC + all dev tools
 - For ADRs, see `.agents/docs/architecture/DECISIONS.md`
 
 ## Testing
 
-No automated test framework — verification is a local `docker run` followed by the tool check script above. Always test locally before pushing to Cloud Run.
+No automated test framework — verification is a local `docker run` followed by the tool check script above. Note: local testing runs amd64 under QEMU/Rosetta emulation and is significantly slower than Cloud Run's native amd64.
 
 ## Deploy
 
@@ -43,8 +43,8 @@ No automated test framework — verification is a local `docker run` followed by
 
 | Path | Purpose |
 |------|---------|
-| `Dockerfile.cloudrun` | Full Ubuntu 24.04 image build with KDE + all tools |
-| `init-cloudrun.sh` | Cloud Run init script (Xtigervnc + KDE + noVNC) |
+| `Dockerfile.cloudrun` | Full Ubuntu 24.04 image build with KDE + KasmVNC + all tools |
+| `init-cloudrun.sh` | Cloud Run init script (KasmVNC + KDE desktop) |
 | `Dockerfile` | Original Debian base (deprecated, kept for reference) |
 | `init.sh` | Original privileged-mode init (deprecated) |
 | `docker-compose.yaml` | Original docker-compose (privileged mode) |
