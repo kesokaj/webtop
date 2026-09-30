@@ -44,11 +44,7 @@ chmod +x /home/${SHELL_USER}/.vnc/xstartup
 chown -R ${SHELL_USER}:${SHELL_USER} /home/${SHELL_USER}/.vnc
 
 ## Start noVNC websocket proxy
-cp /usr/share/novnc/vnc_auto.html /usr/share/novnc/index.html
-sed -i 's/<div id="noVNC_status_bar">/<div id="noVNC_status_bar" style="display:none;">/g' /usr/share/novnc/index.html
-sed -i "s/('resize', false)/('resize', true)/g" /usr/share/novnc/index.html
-sed -i "s/('scale', false)/('scale', true)/g" /usr/share/novnc/index.html
-sed -i "s/('title', 'noVNC')/('title', '${HOSTNAME}')/g" /usr/share/novnc/index.html
+ln -sf /usr/share/novnc/vnc_lite.html /usr/share/novnc/index.html
 websockify --web=/usr/share/novnc/ 8080 localhost:5900 -D
 
 ## Start VNC server — run Xtigervnc directly instead of through vncserver wrapper
