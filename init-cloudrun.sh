@@ -49,7 +49,7 @@ cat > /home/${SHELL_USER}/.vnc/xstartup <<'XSTARTUP'
 #!/bin/bash
 export XDG_SESSION_TYPE=x11
 export XDG_RUNTIME_DIR=/tmp/runtime-$(whoami)
-export DISPLAY=:0
+export DISPLAY=:1
 
 # Start a session dbus
 eval $(dbus-launch --sh-syntax)
@@ -59,6 +59,48 @@ export DBUS_SESSION_BUS_ADDRESS
 exec startplasma-x11
 XSTARTUP
 chmod +x /home/${SHELL_USER}/.vnc/xstartup
+
+## KasmVNC config — websocket on port 8080, no SSL (Cloud Run handles TLS)
+cat > /home/${SHELL_USER}/.vnc/kasmvnc.yaml <<KASMCFG
+network:
+  protocol: http
+  websocket_port: 8080
+  ssl:
+    require_ssl: false
+    pem_certificate:
+    pem_key:
+  udp:
+    public_ip: 127.0.0.1
+
+desktop:
+  resolution:
+    width: 1920
+    height: 1200
+  allow_resize: true
+  pixel_depth: 24
+
+encoding:
+  max_frame_rate: 60
+  rect_encoding_mode:
+    min_quality: 7
+    max_quality: 9
+    consider_lossless_quality: 10
+    rectangle_compress_threads: 0
+
+pointer:
+  enabled: true
+KASMCFG
+
+# Set KasmVNC password with write+owner access (required to avoid interactive prompt)
+# KasmVNC requires password >= 6 chars, pad if needed
+KASM_PW="${SHELL_PASSWORD}"
+if [ ${#KASM_PW} -lt 6 ]; then
+  KASM_PW="${KASM_PW}${KASM_PW}${KASM_PW}"
+fi
+su - ${SHELL_USER} -c "printf '%s\n%s\n' '${KASM_PW}' '${KASM_PW}' | kasmvncpasswd -u ${SHELL_USER} -w -o"
+echo "=== kasmpasswd file ==="
+ls -la /home/${SHELL_USER}/.kasmpasswd 2>&1 || echo "ERROR: .kasmpasswd not created!"
+
 chown -R ${SHELL_USER}:${SHELL_USER} /home/${SHELL_USER}/.vnc
 
 ## KDE performance: disable compositing, animations, and background services
@@ -211,65 +253,31 @@ wallpaperplugin=org.kde.image
 PANELCFG
 chown -R ${SHELL_USER}:${SHELL_USER} /home/${SHELL_USER}/.config
 
-## Start noVNC websocket proxy
-cp /index.html /usr/share/novnc/index.html
-sed -i "s/<title>Webtop<\/title>/<title>${HOSTNAME}<\/title>/g" /usr/share/novnc/index.html
-sed -i "s/document.title = \"Webtop\"/document.title = \"${HOSTNAME}\"/g" /usr/share/novnc/index.html
-sed -i "s/document.title = \"Webtop (disconnected)\"/document.title = \"${HOSTNAME} (disconnected)\"/g" /usr/share/novnc/index.html
-websockify --web=/usr/share/novnc/ 8080 localhost:5900 -D
+## Start KasmVNC server
+echo "=== Starting KasmVNC ==="
 
-## Start VNC server — run Xtigervnc directly instead of through vncserver wrapper
-# The wrapper has issues with startup detection on Cloud Run.
-# Run as user, with xstartup.
-echo "=== Starting Xtigervnc directly ==="
+# Add user to ssl-cert group
+adduser ${SHELL_USER} ssl-cert 2>/dev/null || true
+
+# Start KasmVNC — vncserver wrapper daemonizes itself
 su - ${SHELL_USER} -c "
-  export DISPLAY=:0
   export HOME=/home/${SHELL_USER}
-  
-  # Generate xauth cookie
-  xauth generate :0 . trusted 2>/dev/null || true
-  
-  # Start Xtigervnc in background
-  /usr/bin/Xtigervnc :0 \
-    -rfbport 5900 \
-    -localhost=1 \
-    -SecurityTypes None \
+  export XDG_RUNTIME_DIR=/tmp/runtime-${SHELL_USER}
+  vncserver :1 \
+    -select-de manual \
+    -disableBasicAuth \
     -geometry 1920x1200 \
     -depth 24 \
-    -auth /home/${SHELL_USER}/.Xauthority \
-    -desktop '${HOSTNAME}:0 (${SHELL_USER})' &
-  
-  XVNC_PID=\$!
-  echo \"Xtigervnc PID: \$XVNC_PID\"
-  
-  # Wait for X to be ready
-  for i in 1 2 3 4 5 6 7 8 9 10; do
-    if xdpyinfo -display :0 >/dev/null 2>&1; then
-      echo \"X server ready after \${i}s\"
-      break
-    fi
-    sleep 1
-  done
-  
-  if ! xdpyinfo -display :0 >/dev/null 2>&1; then
-    echo 'ERROR: X server did not start!'
-    exit 1
-  fi
-  
-  # Now start the desktop session
-  export XDG_SESSION_TYPE=x11
-  export XDG_RUNTIME_DIR=/tmp/runtime-${SHELL_USER}
-  eval \$(dbus-launch --sh-syntax)
-  export DBUS_SESSION_BUS_ADDRESS
-  
-  echo \"Starting KDE Plasma...\"
-  startplasma-x11 &
+    -websocketPort 8080 \
+    -interface 0.0.0.0 \
+    -sslOnly 0 \
+    -FrameRate 60
 "
 
 ## Wait for KDE to start, then verify
-sleep 15
+sleep 10
 echo "=== Process check ==="
-ps aux | grep -E 'plasma|kwin|plasmashell|Xtigervnc' | grep -v grep || echo "WARNING: No KDE processes found!"
+ps aux | grep -E 'plasma|kwin|plasmashell|Xkasmvnc' | grep -v grep || echo "WARNING: No KDE processes found!"
 
 ## Keep the container alive no matter what
 exec tail -f /dev/null
