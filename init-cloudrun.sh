@@ -11,7 +11,8 @@ if [ "${SHELL_USER}" ] && [ "${SHELL_PASSWORD}" ]; then
   echo -e "${SHELL_PASSWORD}\n${SHELL_PASSWORD}" | passwd ${SHELL_USER}
   # Default working directory
   mkdir -p /home/${SHELL_USER}/Workspace
-  chown ${SHELL_USER}:${SHELL_USER} /home/${SHELL_USER}/Workspace
+  mkdir -p /home/${SHELL_USER}/.local/share
+  chown -R ${SHELL_USER}:${SHELL_USER} /home/${SHELL_USER}
 else
   echo "SHELL_USER and SHELL_PASSWORD must be set"
   exit 1
