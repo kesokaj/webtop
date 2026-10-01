@@ -10,7 +10,7 @@ RUN apt-get update && \
         curl sudo gnupg ca-certificates software-properties-common \
         tigervnc-standalone-server xauth tigervnc-common novnc dbus-x11 \
         dbus-user-session fuse-overlayfs rsyslog iptables kmod uidmap \
-        kde-plasma-desktop plasma-nm sddm konsole && \
+        kde-plasma-desktop plasma-nm sddm konsole kwin-x11 && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # KasmVNC — replaces TigerVNC + noVNC with WebP-encoded streaming (2-4x faster)
