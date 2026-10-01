@@ -17,8 +17,7 @@ docker buildx build --platform linux/amd64 --load -f Dockerfile.cloudrun -t webt
 ## Run Locally
 
 ```bash
-docker run --rm -d --name webtop -p 8080:8080 \
-  -e SHELL_USER=user -e SHELL_PASSWORD=user webtop:local
+docker run --rm -d --name webtop -p 8080:8080 webtop:local
 
 # Open http://localhost:8080
 ```
@@ -32,7 +31,7 @@ docker tag webtop:local \
 docker push \
   REGION-docker.pkg.dev/PROJECT_ID/REPO/webtop:TAG
 
-# Deploy
+# Deploy (defaults baked in: user/user, port 8080)
 gcloud run deploy webtop \
   --project PROJECT_ID \
   --region REGION \
@@ -40,7 +39,6 @@ gcloud run deploy webtop \
   --port 8080 --memory 4Gi --cpu 2 --timeout 300 \
   --no-cpu-throttling --min-instances 1 --max-instances 2 --cpu-boost \
   --execution-environment gen2 \
-  --set-env-vars SHELL_USER=user,SHELL_PASSWORD=user \
   --allow-unauthenticated
 ```
 
