@@ -4,8 +4,9 @@ LABEL org.opencontainers.image.source https://github.com/kesokaj/webtop
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Core system + KDE desktop + base VNC deps
+# --no-install-recommends avoids pulling apport-core-dump-handler which fails under QEMU
 RUN apt-get update && \
-    apt-get install -y \
+    apt-get install -y --no-install-recommends \
         curl sudo gnupg ca-certificates software-properties-common \
         tigervnc-standalone-server xauth tigervnc-common novnc dbus-x11 \
         dbus-user-session fuse-overlayfs rsyslog iptables kmod uidmap \

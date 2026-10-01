@@ -17,12 +17,13 @@ date: 2026-09-30
 | Service account | `990141581517-compute@developer.gserviceaccount.com` |
 | Auth | `admin@spgo.altostrat.com` |
 | Access | Public (`allUsers` has `roles/run.invoker`) |
-| CPU | 1 |
+| CPU | 2 |
 | Memory | 4Gi |
 | Min instances | 1 |
-| Max instances | 3 |
+| Max instances | 1 |
 | CPU throttling | disabled |
 | Startup CPU boost | enabled |
+| Execution environment | gen2 |
 | Port | 8080 |
 
 ## Build & Push
@@ -43,8 +44,9 @@ gcloud run deploy webtop \
   --project exact-loon-6dim \
   --region europe-west1 \
   --image europe-north1-docker.pkg.dev/exact-loon-6dim/einherjar/webtop:<TAG> \
-  --port 8080 --memory 4Gi --cpu 1 --timeout 300 \
-  --no-cpu-throttling --min-instances 1 --max-instances 3 --cpu-boost \
+  --port 8080 --memory 4Gi --cpu 2 --timeout 300 \
+  --no-cpu-throttling --min-instances 1 --max-instances 1 --cpu-boost \
+  --execution-environment gen2 \
   --set-env-vars SHELL_USER=user,SHELL_PASSWORD=user,TZ=Europe/Stockholm \
   --quiet
 ```

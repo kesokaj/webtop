@@ -74,18 +74,27 @@ network:
 
 desktop:
   resolution:
-    width: 1920
-    height: 1200
+    width: 1280
+    height: 720
   allow_resize: true
   pixel_depth: 24
 
 encoding:
-  max_frame_rate: 60
+  max_frame_rate: 30
   rect_encoding_mode:
-    min_quality: 7
-    max_quality: 9
-    consider_lossless_quality: 10
-    rectangle_compress_threads: 0
+    min_quality: 3
+    max_quality: 5
+    consider_lossless_quality: 7
+    rectangle_compress_threads: 2
+  video_encoding_mode:
+    jpeg_quality: -1
+    webp_quality: -1
+    enter_video_encoding_mode:
+      time_threshold: 5
+      area_threshold: 45%
+
+runtime_configuration:
+  allow_client_to_override_kasm_server_settings: false
 
 pointer:
   enabled: true
@@ -266,12 +275,11 @@ su - ${SHELL_USER} -c "
   vncserver :1 \
     -select-de manual \
     -disableBasicAuth \
-    -geometry 1920x1200 \
+    -geometry 1280x720 \
     -depth 24 \
     -websocketPort 8080 \
     -interface 0.0.0.0 \
-    -sslOnly 0 \
-    -FrameRate 60
+    -sslOnly 0
 "
 
 ## Wait for KDE to start, then verify
