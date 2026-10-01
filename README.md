@@ -38,7 +38,7 @@ gcloud run deploy webtop \
   --region REGION \
   --image REGION-docker.pkg.dev/PROJECT_ID/REPO/webtop:TAG \
   --port 8080 --memory 4Gi --cpu 2 --timeout 300 \
-  --no-cpu-throttling --min-instances 1 --max-instances 1 --cpu-boost \
+  --no-cpu-throttling --min-instances 1 --max-instances 2 --cpu-boost \
   --execution-environment gen2 \
   --set-env-vars SHELL_USER=user,SHELL_PASSWORD=user \
   --allow-unauthenticated
